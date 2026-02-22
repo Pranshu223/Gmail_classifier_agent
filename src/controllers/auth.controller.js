@@ -12,17 +12,25 @@ export const googleAuth = (req, res) => {
 };
 
 export const googleCallback = async (req, res) => {
-  const { code } = req.query;
-  console.log("code is",code);
-  const { tokens } = await oauth2Client.getToken(code);
-  console.log("tokens",tokens);
-  oauth2Client.setCredentials(tokens);
+  try {
+    const { code } = req.query;
 
-  const classified = await fetchAndClassify(oauth2Client);
-  console.log("classified",classified);
-  
-  res.json({
-    success: true,
-    data: classified
-  });
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    const classified = await fetchAndClassify(oauth2Client);
+
+    res.json({
+      success: true,
+      data: classified
+    });
+
+  } catch (err) {
+    console.error("ERROR:", err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message || err
+    });
+  }
 };
