@@ -30,6 +30,7 @@ LABELS = [
     "Personal",
     "Spam / Phishing"
 ]
+#entire instruction + LABEL together become one single 768 dimension vector [768 vectored values]
 label_embeddings = model.encode(
     [["Classify the email into one of the predefined categories: ", label] for label in LABELS],
     normalize_embeddings=True
@@ -47,7 +48,7 @@ if __name__ == "__main__":
             sys.stdout.flush()
             sys.exit(0)
 
-        emails = json.loads(raw_input)
+        emails = json.loads(raw_input) #it is useful for JSON parsing -> jo i/p email ne dia usko JSON m krdena
         # print("EMAILS",emails)
 
         if not emails:
@@ -56,7 +57,6 @@ if __name__ == "__main__":
             sys.exit(0)
 
         # Prepare Batch Inputs
-
         email_inputs = []
 
         for email in emails:
@@ -66,22 +66,19 @@ if __name__ == "__main__":
             body_val = str(email.get("body", ""))
 
             text = f"From: {from_val}\nSubject: {subject_val}\nBody: {body_val}"
+            #ye h ab instruction MODEL ka format usme convert krni
             email_inputs.append(
                 ["Represent the email for classification:", text]
             )
             #print("email inputs is",email_inputs)
 
-        # email_embeddings = model.encode(
-        #     email_inputs,
-        #     normalize_embeddings=True
-        # )
         email_embeddings = []
+        #isme har email ki [768] vectored value jo normalize krk email_embedding[] m daal denge
         for i, item in enumerate(email_inputs):
             try:
                 emb = model.encode([item], normalize_embeddings=True)
                 email_embeddings.append(emb[0])
             except Exception as e:
-                    # Skip bad email instead of crashing
                 continue
         if not email_embeddings:
             sys.output.write(json.dumps([]))
